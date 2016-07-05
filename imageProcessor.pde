@@ -6,6 +6,40 @@ class ImageProcessor {
     resizeImage();
   }
   
+  void setNewImage(PImage newImage) {
+    baseImage = newImage.copy();
+    resizeImage();
+  }
+  
+  //pixelate an image
+  //use odd values for xPixels and yPixels
+  PImage pixelate(int xPixels, int yPixels, int pixelSize) {
+    PImage img = createImage(xPixels * pixelSize, yPixels * pixelSize, RGB);
+    int midX = baseImage.width/2;
+    int midY = baseImage.height/2;
+    img.loadPixels();
+    baseImage.loadPixels();
+    int xStart = midX - (xPixels-1)/2;
+    int yStart = midY - (yPixels-1)/2;
+    int baseX;
+    int baseY;
+    color col;
+    
+    for(int x = 0; x < img.width; x++) {
+      for(int y = 0; y < img.height; y++) {
+        baseX = xStart + floor(x/pixelSize);
+        baseY = yStart + floor(y/pixelSize);
+        col = baseImage.pixels[baseY*baseImage.width + baseX];
+        img.pixels[y*img.width + x] = col;
+      }
+    }
+    
+    img.updatePixels();
+    baseImage.updatePixels();
+
+    return(img);
+  }
+  
   //a psychodelic style filter
   //applies a blur 
   //then creates contours with different hues by using modulo arithmetic based on brightness
@@ -14,12 +48,12 @@ class ImageProcessor {
     colorMode(HSB);
     PImage img = baseImage;
     //contours look nicer on less busy images
-    img.filter(BLUR,4);
+    img.filter(BLUR,4);    
     img.loadPixels();
     for(int x = 0; x < img.width; x++) {
       for(int y = 0; y < img.height; y++) {
         //choose selection critera for contour to edit
-        if(brightness(img.pixels[img.width*y + x]) % 10 < 5) {
+        if(brightness(img.pixels[img.width*y + x]) % 10 > 6) {
           //get pixel properties to modify
           float h = hue(img.pixels[img.width*y + x]);
           float s = saturation(img.pixels[img.width*y + x]);
@@ -32,6 +66,48 @@ class ImageProcessor {
       }
     }
     img.updatePixels();
+    
+    return(img);
+  }
+  
+  PImage increaseSaturation() {
+    colorMode(HSB);
+    PImage img = baseImage.copy();
+    img.loadPixels();
+    for(int x = 0; x < img.width; x++) {
+      for(int y = 0; y < img.height; y++) {
+        //choose selection critera for contour to edit
+          //get pixel properties to modify
+          float h = hue(img.pixels[img.width*y + x]);
+          float s = saturation(img.pixels[img.width*y + x]);
+          float b = brightness(img.pixels[img.width*y + x]);
+
+          img.pixels[img.width*y + x] = color(h,constrain(s+64,0,255),b);
+      }
+    }
+    img.updatePixels();
+    
+    return(img);
+  }
+  
+  PImage adjustHue() {
+    colorMode(HSB);
+    PImage img = baseImage.copy();
+    img.loadPixels();
+    int hueOffset = (int)random(0,255);
+    for(int x = 0; x < img.width; x++) {
+      for(int y = 0; y < img.height; y++) {
+        //choose selection critera for contour to edit
+          //get pixel properties to modify
+          float h = hue(img.pixels[img.width*y + x]);
+          float s = saturation(img.pixels[img.width*y + x]);
+          float b = brightness(img.pixels[img.width*y + x]);
+
+          img.pixels[img.width*y + x] = color((h+hueOffset)%255,s,b);
+      }
+    }
+    img.updatePixels();
+    
     return(img);
   }
   
