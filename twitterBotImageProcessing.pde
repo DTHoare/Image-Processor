@@ -9,7 +9,7 @@ int noiseSeed;
 
 void setup() {
   //load image and set up window
-  PImage img = loadImage("refImage1.jpg");
+  PImage img = loadImage("waterfall4.jpg");
   //imageCreator = new ImageCreator(1024,512);
   //img = imageCreator.noiseSquares();
   imageProcessor = new ImageProcessor(img);
@@ -34,7 +34,8 @@ void draw() {
   //imageProcessor.setNewImage(imageProcessor.renderBrightnessContours());
   //image(imageProcessor.renderThreeToneFabric(),0,0);
   
-  abstractPixelPhoto();
+  //abstractPixelPhoto();
+  abstractContourPhoto();
   
   //image(imageCreator.noiseSquares(),0,0);
   
@@ -72,5 +73,10 @@ void abstractPixelPhoto() {
   //pixelate
   int pixelSize = 4;
   PImage image = imageProcessor.pixelateAllAverage(pixelSize);
+  image(image,0,0);
+}
+
+void abstractContourPhoto() {
+  PImage image = imageProcessor.renderVividContours();
   image(image,0,0);
 }

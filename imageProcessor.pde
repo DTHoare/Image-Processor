@@ -18,15 +18,18 @@ class ImageProcessor {
   PImage renderVividContours() {
     //this method keeps the base image intact
     PImage temp = baseImage.copy();
-    renderBrightnessContours();
-    increaseSaturation();
-    adjustHue();
+    setNewImage(renderBrightnessContours());
+    setNewImage(increaseSaturation());
+    setNewImage(adjustHue());
     PImage output = baseImage.copy();
     baseImage = temp.copy();
     return(output);
   }
   
   //pixelate based on average
+  //treats the original image as a series of boxes
+  //the average value of each of these boxes is calculated
+  //the pixels in a new image are set to these values
   PImage pixelateAllAverage(int pixelSize) {
     //setup for pixel editing
     PImage img = baseImage.copy();
@@ -51,6 +54,7 @@ class ImageProcessor {
         b = 0;
         total = 0;
         
+        //add up values of each pixel in the new section
         for(int innerX = baseX; innerX < baseX+pixelSize; innerX++) {
           for(int innerY = baseY; innerY < baseY+pixelSize; innerY++) {
             if(baseImage.pixels.length > innerY*baseImage.width + innerX) {
