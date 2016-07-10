@@ -24,4 +24,31 @@ class ImageCreator {
     img.endDraw();
     return img;
   }
+  
+    //creates a linen like texture
+  PImage linenTexture(color foreColour, color backColour, int width_, int height_) {
+    PGraphics g = createGraphics(width_, height_);
+    randomSeed(randomSeed);
+    g.beginDraw();
+    g.background(backColour);
+    g.noFill();
+    for(int i = 0; i<18855; i++) {
+      if(floor(random(0,2)) == 0) {
+        g.stroke(backColour, 22);
+      } else {
+        g.stroke(foreColour, 22);
+      }
+      g.ellipse(random(0,g.width), random(0,g.height),
+        random(0,400), random(0,400));
+      g.rectMode(CENTER);
+      g.pushMatrix();
+      g.translate(random(0,g.width), random(0,g.height));
+      g.rotate(random(-PI/22, PI/22));
+      g.rect(0,0,random(0,g.width), random(0,g.height));
+      g.popMatrix();
+    }
+    g.endDraw();
+    
+    return(g);
+  }
 }

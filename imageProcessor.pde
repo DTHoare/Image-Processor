@@ -182,8 +182,8 @@ class ImageProcessor {
   //renders in two opposite colours
   //backcolors of textures cancel in netural tones
   PImage renderTwoBaseFabric() {
-    PImage lightTexture = linenTexture(purple, 255);
-    PImage darkTexture = linenTexture(purple,0);
+    PImage lightTexture = imageCreator.linenTexture(purple, 255, baseImage.width, baseImage.height);
+    PImage darkTexture = imageCreator.linenTexture(purple,0, baseImage.width, baseImage.height);
     PImage filter = baseImage.copy();
     filter.filter(GRAY);
     darkTexture.mask(filter);
@@ -204,8 +204,8 @@ class ImageProcessor {
   //creates one colour for most of image
   //overlays a second colour on darker areas
   PImage renderTwoToneFabric() {
-    PImage lightTexture = linenTexture(purple, 255);
-    PImage darkTexture = linenTexture(0,255);
+    PImage lightTexture = imageCreator.linenTexture(purple, 255, baseImage.width, baseImage.height);
+    PImage darkTexture = imageCreator.linenTexture(0,255, baseImage.width, baseImage.height);
     PImage filter = baseImage.copy();
     filter.filter(INVERT);
     filter.filter(GRAY);
@@ -228,9 +228,9 @@ class ImageProcessor {
   
     //two tone fabric but with light section two
   PImage renderThreeToneFabric() {
-    PImage lightTexture = linenTexture(pastelBlue,122);
-    PImage midTexture = linenTexture(purple, 192);
-    PImage darkTexture = linenTexture(0,192);
+    PImage lightTexture = imageCreator.linenTexture(pastelBlue,122, baseImage.width, baseImage.height);
+    PImage midTexture = imageCreator.linenTexture(purple, 192, baseImage.width, baseImage.height);
+    PImage darkTexture = imageCreator.linenTexture(0,192, baseImage.width, baseImage.height);
     PImage filter = baseImage.copy();
     
     PImage filterLight = fade2(filter,0.6);
@@ -270,33 +270,7 @@ class ImageProcessor {
     }
     baseImage.resize(int(w/ratio), int(h/ratio));
   }
-  
-  //creates a linen like texture
-  PImage linenTexture(color foreColour, color backColour) {
-    PGraphics g = createGraphics(baseImage.width, baseImage.height);
-    randomSeed(randomSeed);
-    g.beginDraw();
-    g.background(backColour);
-    g.noFill();
-    for(int i = 0; i<18855; i++) {
-      if(floor(random(0,2)) == 0) {
-        g.stroke(backColour, 22);
-      } else {
-        g.stroke(foreColour, 22);
-      }
-      g.ellipse(random(0,g.width), random(0,g.height),
-        random(0,400), random(0,400));
-      g.rectMode(CENTER);
-      g.pushMatrix();
-      g.translate(random(0,g.width), random(0,g.height));
-      g.rotate(random(-PI/22, PI/22));
-      g.rect(0,0,random(0,g.width), random(0,g.height));
-      g.popMatrix();
-    }
-    g.endDraw();
-    
-    return(g);
-  }
+ 
   
   //applies a polynomial fade
   PImage fade(PImage img_) {
