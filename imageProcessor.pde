@@ -11,9 +11,75 @@ class ImageProcessor {
     resizeImage();
   }
   
-  //pixelate an image
+  //trippy combination:
+  //-renderbrightnessContours
+  //-increaseSaturation
+  //-adjustHue
+  PImage renderVividContours() {
+    //this method keeps the base image intact
+    PImage temp = baseImage.copy();
+    renderBrightnessContours();
+    increaseSaturation();
+    adjustHue();
+    PImage output = baseImage.copy();
+    baseImage = temp.copy();
+    return(output);
+  }
+  
+  //pixelate based on average
+  PImage pixelateAllAverage(int pixelSize) {
+    //setup for pixel editing
+    PImage img = baseImage.copy();
+    img.loadPixels();
+    baseImage.loadPixels();
+    int baseX;
+    int baseY;
+    color col;
+    int h, s, b = 0;
+    int total;
+    colorMode(HSB);
+    
+    for(int x = 0; x < img.width; x++) {
+      for(int y = 0; y < img.height; y++) {
+        //calculate pixel blocks
+        baseX = floor(x/pixelSize) * pixelSize;
+        baseY = floor(y/pixelSize) * pixelSize;
+        
+        //reset color
+        h = 0;
+        s = 0;
+        b = 0;
+        total = 0;
+        
+        for(int innerX = baseX; innerX < baseX+pixelSize; innerX++) {
+          for(int innerY = baseY; innerY < baseY+pixelSize; innerY++) {
+            if(baseImage.pixels.length > innerY*baseImage.width + innerX) {
+              h += hue(baseImage.pixels[innerY*baseImage.width + innerX]);
+              s += saturation(baseImage.pixels[innerY*baseImage.width + innerX]);
+              b += brightness(baseImage.pixels[innerY*baseImage.width + innerX]);
+              total ++;
+            }
+            
+          }
+        }
+        //normalise
+        h /= total;
+        s /= total;
+        b /= total;
+        
+        col = color(h,s,b);
+        
+        //set color
+        img.pixels[y*img.width + x] = col;
+      }
+    }
+    
+    return(img);
+  }
+  
+  //pixelate an image by zooming
   //use odd values for xPixels and yPixels
-  PImage pixelate(int xPixels, int yPixels, int pixelSize) {
+  PImage pixelateZoom(int xPixels, int yPixels, int pixelSize) {
     PImage img = createImage(xPixels * pixelSize, yPixels * pixelSize, RGB);
     int midX = baseImage.width/2;
     int midY = baseImage.height/2;
@@ -59,7 +125,7 @@ class ImageProcessor {
           float s = saturation(img.pixels[img.width*y + x]);
           float b = brightness(img.pixels[img.width*y + x]);
 
-          img.pixels[img.width*y + x] = color((h+120)%255,255-s,255-b);
+          img.pixels[img.width*y + x] = color(h,255-s,255-b);
         }
         //rest of the image left as is
         
@@ -70,6 +136,7 @@ class ImageProcessor {
     return(img);
   }
   
+  //adds some saturation to an image
   PImage increaseSaturation() {
     colorMode(HSB);
     PImage img = baseImage.copy();
@@ -90,6 +157,7 @@ class ImageProcessor {
     return(img);
   }
   
+  //hue shifts an image by a random amount
   PImage adjustHue() {
     colorMode(HSB);
     PImage img = baseImage.copy();

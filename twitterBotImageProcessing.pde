@@ -9,14 +9,14 @@ int noiseSeed;
 
 void setup() {
   //load image and set up window
-  //PImage img = loadImage("refImage2.jpg");
-  imageCreator = new ImageCreator(1024,512);
-  img = imageCreator.noiseSquares();
+  PImage img = loadImage("refImage1.jpg");
+  //imageCreator = new ImageCreator(1024,512);
+  //img = imageCreator.noiseSquares();
   imageProcessor = new ImageProcessor(img);
   surface.setSize(imageProcessor.baseImage.width, imageProcessor.baseImage.height);
   //only drawing a static image
   //surface.setsize only works at the end of setup()
-  //noLoop();
+  noLoop();
   
   //define a random seed that can be saved
   //this allows duplicate textures to be made
@@ -33,25 +33,44 @@ void draw() {
   
   //imageProcessor.setNewImage(imageProcessor.renderBrightnessContours());
   //image(imageProcessor.renderThreeToneFabric(),0,0);
-  randomSeed(randomSeed);
-  noiseSeed(noiseSeed);
-  img = imageCreator.noiseSquares();
   
-  imageProcessor.setNewImage(img);
-  imageProcessor.setNewImage(imageProcessor.renderBrightnessContours());
-  PImage image = imageProcessor.increaseSaturation();
-  imageProcessor.setNewImage(image);
-  image = imageProcessor.adjustHue();
-  
-  int pixelSize = 10;
-  int xPixels = floor(width/pixelSize) - 2;
-  int yPixels = floor(height/pixelSize) - 2;
-  image = imageProcessor.pixelate(xPixels,yPixels,pixelSize);
-  imageMode(CENTER);
-  background(0);
-  image(image,width/2,height/2);
+  abstractPixelPhoto();
   
   //image(imageCreator.noiseSquares(),0,0);
   
+  save("image.png");
   //saveFrame("image###.png");
+}
+
+void abstractPixelGenerative() {
+  //set same starting point
+  //animation controlled by frame number
+  randomSeed(randomSeed);
+  noiseSeed(noiseSeed);
+  
+  //create image
+  img = imageCreator.noiseSquares();
+  imageProcessor.setNewImage(img);
+  
+  //process into colours
+  imageProcessor.setNewImage(imageProcessor.renderVividContours());
+  
+  //zoom into center and pixelate
+  int pixelSize = 10;
+  int xPixels = floor(width/pixelSize) - 2;
+  int yPixels = floor(height/pixelSize) - 2;
+  PImage image = imageProcessor.pixelateZoom(xPixels,yPixels,pixelSize);
+  imageMode(CENTER);
+  background(0);
+  image(image,width/2,height/2);
+}
+
+void abstractPixelPhoto() {
+  //process into colours
+  imageProcessor.setNewImage(imageProcessor.renderVividContours());
+  
+  //pixelate
+  int pixelSize = 4;
+  PImage image = imageProcessor.pixelateAllAverage(pixelSize);
+  image(image,0,0);
 }
