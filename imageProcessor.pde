@@ -26,6 +26,44 @@ class ImageProcessor {
     return(output);
   }
   
+  //applies a gamma factor to hue
+  //makes image greyscale with red and green tints
+  PImage roseImage(float gamma) {
+    PImage img = baseImage.copy();
+    img.loadPixels();
+    float h, s, b = 0;
+    colorMode(HSB);
+    
+    for(int x  = 0; x < img.width; x++) {
+      for(int y = 0; y < img.height; y++) {
+        h = hue(img.pixels[img.width*y + x]);
+        s = saturation(img.pixels[img.width*y + x]);
+        b = brightness(img.pixels[img.width*y + x]);
+        h = constrain(255  * pow((h/255),gamma),0,255);
+        img.pixels[img.width*y + x] = color(h,s,b);
+      }
+    }
+    return(img);
+  }
+  
+  PImage gammaCorrection(float gamma) {
+    PImage img = baseImage.copy();
+    img.loadPixels();
+    float h, s, b = 0;
+    colorMode(HSB);
+    
+    for(int x  = 0; x < img.width; x++) {
+      for(int y = 0; y < img.height; y++) {
+        h = hue(img.pixels[img.width*y + x]);
+        s = saturation(img.pixels[img.width*y + x]);
+        b = brightness(img.pixels[img.width*y + x]);
+        b = constrain(255  * pow((b/255),gamma),0,255);
+        img.pixels[img.width*y + x] = color(h,s,b);
+      }
+    }
+    return(img);
+  }
+  
   //pixelate based on average
   //treats the original image as a series of boxes
   //the average value of each of these boxes is calculated
@@ -81,6 +119,76 @@ class ImageProcessor {
     return(img);
   }
   
+  //returns either min or max based on brightness
+  //depending upon average
+  PImage pixelateAllMinMax(int pixelSize) {
+    //setup for pixel editing
+    PImage img = baseImage.copy();
+    img.loadPixels();
+    baseImage.loadPixels();
+    int baseX;
+    int baseY;
+    color col;
+    color min = color(128,0,0);
+    color max = color(128,0,0);
+    int h, s, b = 0;
+    int total;
+    colorMode(HSB);
+    
+    for(int x = 0; x < img.width; x++) {
+      for(int y = 0; y < img.height; y++) {
+        //calculate pixel blocks
+        baseX = floor(x/pixelSize) * pixelSize;
+        baseY = floor(y/pixelSize) * pixelSize;
+        
+        //reset color
+        h = 0;
+        s = 0;
+        b = 0;
+        total = 0;
+        
+        //add up values of each pixel in the new section
+        for(int innerX = baseX; innerX < baseX+pixelSize; innerX++) {
+          for(int innerY = baseY; innerY < baseY+pixelSize; innerY++) {
+            if(baseImage.pixels.length > innerY*baseImage.width + innerX) {
+              h += hue(baseImage.pixels[innerY*baseImage.width + innerX]);
+              s += saturation(baseImage.pixels[innerY*baseImage.width + innerX]);
+              b += brightness(baseImage.pixels[innerY*baseImage.width + innerX]);
+              total ++;
+              
+              //decide min or max
+              if(b > brightness(max)) {
+                max = baseImage.pixels[innerY*baseImage.width + innerX];
+              } else if(b < brightness(min)) {
+                min = baseImage.pixels[innerY*baseImage.width + innerX];
+              }
+            }
+            
+          }
+        }
+        //normalise
+        h /= total;
+        s /= total;
+        b /= total;
+        
+        if(b > 127) {
+          h = (int)hue(max);
+          s = (int)saturation(max);
+          b = (int)brightness(max);
+          col = color(h,s/2,constrain(b*1.5,0,255));
+        } else {
+          col= min;
+          //col = color(0,0,0);
+        }
+        
+        //set color
+        img.pixels[y*img.width + x] = col;
+      }
+    }
+    
+    return(img);
+  }
+  
   //pixelate an image by zooming
   //use odd values for xPixels and yPixels
   PImage pixelateZoom(int xPixels, int yPixels, int pixelSize) {
@@ -118,7 +226,7 @@ class ImageProcessor {
     colorMode(HSB);
     PImage img = baseImage;
     //contours look nicer on less busy images
-    img.filter(BLUR,4);    
+    img.filter(BLUR,16);    
     img.loadPixels();
     for(int x = 0; x < img.width; x++) {
       for(int y = 0; y < img.height; y++) {
