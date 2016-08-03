@@ -14,6 +14,11 @@ class ImageCreator {
     img.background(255);
     img.colorMode(HSB);
     img.noStroke();
+    //change order of mangitude of number of squares to change effect of processing
+    //for generative abstract pixels:
+    //300: dull not much
+    //3000: pastel patterns
+    //30000: darker more circular patterns
     for(int i = 0; i < 3000; i++) {
       img.fill(random(0,255),random(0,255),random(0,255));
       int x = (int)map(noise(325+i*0.01 +0.001*frameCount),0.2,0.8,0,img.width);

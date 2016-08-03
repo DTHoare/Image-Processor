@@ -18,6 +18,7 @@ class ImageProcessor {
   PImage renderVividContours() {
     //this method keeps the base image intact
     PImage temp = baseImage.copy();
+    baseImage.filter(BLUR,16);
     setNewImage(renderBrightnessContours());
     setNewImage(increaseSaturation());
     setNewImage(adjustHue());
@@ -129,7 +130,7 @@ class ImageProcessor {
     int baseX;
     int baseY;
     color col;
-    color min = color(128,0,0);
+    color min = color(128,0,255);
     color max = color(128,0,0);
     int h, s, b = 0;
     int total;
@@ -146,6 +147,8 @@ class ImageProcessor {
         s = 0;
         b = 0;
         total = 0;
+        min = color(128,0,255);
+        max = color(128,0,0);
         
         //add up values of each pixel in the new section
         for(int innerX = baseX; innerX < baseX+pixelSize; innerX++) {
@@ -157,9 +160,9 @@ class ImageProcessor {
               total ++;
               
               //decide min or max
-              if(b > brightness(max)) {
+              if(brightness(baseImage.pixels[innerY*baseImage.width + innerX]) > brightness(max)) {
                 max = baseImage.pixels[innerY*baseImage.width + innerX];
-              } else if(b < brightness(min)) {
+              } else if(brightness(baseImage.pixels[innerY*baseImage.width + innerX]) < brightness(min)) {
                 min = baseImage.pixels[innerY*baseImage.width + innerX];
               }
             }
@@ -177,8 +180,8 @@ class ImageProcessor {
           b = (int)brightness(max);
           col = color(h,s/2,constrain(b*1.5,0,255));
         } else {
-          col= min;
-          //col = color(0,0,0);
+          //col= min;
+          col = color(0,0,0);
         }
         
         //set color
@@ -226,7 +229,7 @@ class ImageProcessor {
     colorMode(HSB);
     PImage img = baseImage;
     //contours look nicer on less busy images
-    img.filter(BLUR,16);    
+    //img.filter(BLUR,16);    
     img.loadPixels();
     for(int x = 0; x < img.width; x++) {
       for(int y = 0; y < img.height; y++) {

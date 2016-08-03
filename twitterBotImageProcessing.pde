@@ -9,7 +9,7 @@ int noiseSeed;
 
 void setup() {
   //load image and set up window
-  PImage img = loadImage("waterfall4.jpg");
+  PImage img = loadImage("waterfall2.jpg");
   imageCreator = new ImageCreator(1024,512);
   //img = imageCreator.noiseSquares();
   imageProcessor = new ImageProcessor(img);
@@ -34,8 +34,8 @@ void draw() {
   //imageProcessor.setNewImage(imageProcessor.renderBrightnessContours());
   //image(imageProcessor.renderThreeToneFabric(),0,0);
   
-  //abstractPixelGenerative();
-  abstractPixelPhoto();
+  abstractPixelGenerative();
+  //abstractPixelPhoto();
   //abstractContourPhoto();
   
   //image(imageCreator.noiseSquares(),0,0);
@@ -62,6 +62,7 @@ void abstractPixelGenerative() {
   int xPixels = floor(width/pixelSize) - 2;
   int yPixels = floor(height/pixelSize) - 2;
   PImage image = imageProcessor.pixelateZoom(xPixels,yPixels,pixelSize);
+  //PImage image = imageProcessor.baseImage;
   imageMode(CENTER);
   background(0);
   image(image,width/2,height/2);
@@ -69,14 +70,20 @@ void abstractPixelGenerative() {
 
 void abstractPixelPhoto() {
   //process into colours
-  PImage image = imageProcessor.gammaCorrection(0.4);
+  PImage image = imageProcessor.gammaCorrection(0.2);
   imageProcessor.setNewImage(image);
   image = imageProcessor.renderVividContours();
+  imageProcessor.baseImage.filter(BLUR, 16);
+  image = imageProcessor.increaseSaturation();
+  imageProcessor.setNewImage(image);
+  image = imageProcessor.adjustHue();
   imageProcessor.setNewImage(image);
   
   //pixelate
   int pixelSize = 5;
-  image = imageProcessor.pixelateAllMinMax(pixelSize);
+  image = imageProcessor.pixelateAllAverage(pixelSize);
+  imageProcessor.setNewImage(image);
+  image = imageProcessor.renderBrightnessContours();
   image(image,0,0);
 }
 
