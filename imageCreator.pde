@@ -7,6 +7,45 @@ class ImageCreator {
     h = h_;
   }
   
+  /* -----------------------------------------------------------------------------
+  Rainbow
+  Draws a hue, with a hue adjustment algorithm
+  For debugging color adjustments
+  ----------------------------------------------------------------------------- */ 
+  
+  PImage rainbow() {
+    noStroke();
+    PImage img = createImage(w,h,HSB);
+    colorMode(HSB);
+    img.loadPixels();
+    int hueOffset = (int)random(0,255);
+    for(int x = 0; x < img.width; x++) {
+      for(int y = 0; y < img.height; y++) {
+        float h = 255/float(img.width) * x;
+        float s = 255/float(img.height) * y;
+        float b = 255;
+        if(h > 128) {
+            h = periodicSigmoid(255,0.012,128, (255-h));
+        } else {
+            h = periodicSigmoid(255,0.012,128, h);
+        }
+        h = (h + (hueOffset))%255;
+        
+          
+        img.pixels[y*img.width + x] = color(h,s,b);
+      }
+    }
+    img.updatePixels();
+    
+    return img;
+  }
+  
+  /* -----------------------------------------------------------------------------
+  noiseSquares
+  Draws squares controlled by perlin noise in many colours
+  Good basis for contour processing
+  ----------------------------------------------------------------------------- */ 
+  
   PImage noiseSquares() {
     noStroke();
     PGraphics img = createGraphics(w,h);
@@ -19,18 +58,22 @@ class ImageCreator {
     //300: dull not much
     //3000: pastel patterns
     //30000: darker more circular patterns
-    for(int i = 0; i < 3000; i++) {
+    for(int i = 0; i < 4000; i++) {
       img.fill(random(0,255),random(0,255),random(0,255));
       int x = (int)map(noise(325+i*0.01 +0.001*frameCount),0.2,0.8,0,img.width);
       int y = (int)map(noise(3532-i*0.01+0.001*frameCount),0.2,0.8,0,img.height);
-      int size = (int)random(1,5);
+      int size = (int)random(1,6);
       img.rect(x,y,size,size);
     }
     img.endDraw();
     return img;
   }
   
-    //creates a linen like texture
+  /* -----------------------------------------------------------------------------
+  linenTexture
+  Creates a texture that looks akin to linen or other fabric
+  ----------------------------------------------------------------------------- */ 
+
   PImage linenTexture(color foreColour, color backColour, int width_, int height_) {
     PGraphics g = createGraphics(width_, height_);
     randomSeed(randomSeed);

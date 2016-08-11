@@ -6,26 +6,113 @@ class ImageProcessor {
     resizeImage();
   }
   
+  //resizes to ratio good for twitter
   void setNewImage(PImage newImage) {
     baseImage = newImage.copy();
     resizeImage();
   }
   
-  //trippy combination:
-  //-renderbrightnessContours
-  //-increaseSaturation
-  //-adjustHue
+  //useful for pixel zoom functions to keep hard edges
+  void setNewImageNoResize(PImage newImage) {
+    baseImage = newImage.copy();
+  }
+  
+  /* -----------------------------------------------------------------------------
+  Contour generators
+  ----------------------------------------------------------------------------- */ 
   PImage renderVividContours() {
     //this method keeps the base image intact
     PImage temp = baseImage.copy();
     baseImage.filter(BLUR,16);
-    setNewImage(renderBrightnessContours());
+    setNewImage(renderBrightnessContours2());
     setNewImage(increaseSaturation());
     setNewImage(adjustHue());
     PImage output = baseImage.copy();
     baseImage = temp.copy();
     return(output);
   }
+  
+  //a psychodelic style filter
+  //applies a blur 
+  //then creates contours with different hues by using modulo arithmetic based on brightness
+  PImage renderBrightnessContours() {
+    //
+    colorMode(HSB);
+    PImage img = baseImage;
+    //contours look nicer on less busy images
+    //img.filter(BLUR,16);    
+    img.loadPixels();
+    for(int x = 0; x < img.width; x++) {
+      for(int y = 0; y < img.height; y++) {
+        //choose selection critera for contour to edit
+        if(brightness(img.pixels[img.width*y + x]) % 10 > 8) {
+          //get pixel properties to modify
+          float h = hue(img.pixels[img.width*y + x]);
+          float s = saturation(img.pixels[img.width*y + x]);
+          float b = brightness(img.pixels[img.width*y + x]);
+
+          img.pixels[img.width*y + x] = color(h,255-s,255-b);
+        }
+        //rest of the image left as is
+        
+      }
+    }
+    img.updatePixels();
+    
+    return(img);
+  }
+  
+   //a psychodelic style filter
+  //applies a blur 
+  //then creates contours with different hues by using modulo arithmetic based on brightness
+  //this has duel tone contours that change hue
+  PImage renderBrightnessContours2() {
+    //
+    colorMode(HSB);
+    PImage img = baseImage;
+    //contours look nicer on less busy images
+    //img.filter(BLUR,16);    
+    img.loadPixels();
+    for(int x = 0; x < img.width; x++) {
+      for(int y = 0; y < img.height; y++) {
+        //choose selection critera for contour to edit
+        if(brightness(img.pixels[img.width*y + x]) % 6 >= 3) {
+          //get pixel properties to modify
+          float h = hue(img.pixels[img.width*y + x]);
+          float s = saturation(img.pixels[img.width*y + x]);
+          float b = brightness(img.pixels[img.width*y + x]);
+
+          img.pixels[img.width*y + x] = color(h+64,s+50,b-40);
+        }
+        //rest of the image left as is
+        
+      }
+    }
+    img.updatePixels();
+    img.loadPixels();
+    for(int x = 0; x < img.width; x++) {
+      for(int y = 0; y < img.height; y++) {
+        //choose selection critera for contour to edit
+        if(brightness(img.pixels[img.width*y + x]) % 6 >= 5) {
+          //get pixel properties to modify
+          float h = hue(img.pixels[img.width*y + x]);
+          float s = saturation(img.pixels[img.width*y + x]);
+          float b = brightness(img.pixels[img.width*y + x]);
+
+          img.pixels[img.width*y + x] = color(h+64,s+50,b-80);
+        }
+        //rest of the image left as is
+        
+      }
+    }
+    img.updatePixels();
+    
+    return(img);
+  }
+  
+  /* -----------------------------------------------------------------------------
+  Hue adjustors
+  ----------------------------------------------------------------------------- */ 
   
   //applies a gamma factor to hue
   //makes image greyscale with red and green tints
@@ -47,6 +134,118 @@ class ImageProcessor {
     return(img);
   }
   
+  //hue shifts an image by a random amount
+  PImage adjustHue() {
+    colorMode(HSB);
+    PImage img = baseImage.copy();
+    img.loadPixels();
+    int hueOffset = (int)random(0,255);
+    for(int x = 0; x < img.width; x++) {
+      for(int y = 0; y < img.height; y++) {
+        //choose selection critera for contour to edit
+          //get pixel properties to modify
+          float h = hue(img.pixels[img.width*y + x]);
+          float s = saturation(img.pixels[img.width*y + x]);
+          float b = brightness(img.pixels[img.width*y + x]);
+
+          img.pixels[img.width*y + x] = color((h+hueOffset)%255,s,b);
+      }
+    }
+    img.updatePixels();
+    
+    return(img);
+  }
+  
+  //hue shifts an image by a random amount
+  PImage restrictHue() {
+    colorMode(HSB);
+    PImage img = baseImage.copy();
+    img.loadPixels();
+    int hueOffset = (int)random(0,255);
+    for(int x = 0; x < img.width; x++) {
+      for(int y = 0; y < img.height; y++) {
+        //choose selection critera for contour to edit
+          //get pixel properties to modify
+          float h = hue(img.pixels[img.width*y + x]);
+          float s = saturation(img.pixels[img.width*y + x]);
+          float b = brightness(img.pixels[img.width*y + x]);
+          
+          //h = map(h,0,255,0,25);
+          //h=int(h/4);
+          if(h > 128) {
+            h = map(h,128,255,128,128+40);
+            //h = (h + hueOffset)%255;
+          } else {
+            h = map(h,0,128,0,40);
+            //h = (h + hueOffset)%255;
+          }
+          h = (h + (hueOffset))%255; 
+
+          img.pixels[img.width*y + x] = color(h,s,b);
+      }
+    }
+    img.updatePixels();
+    
+    return(img);
+  }
+  
+  PImage twoToneHue() {
+    colorMode(HSB);
+    PImage img = baseImage.copy();
+    img.loadPixels();
+    int hueOffset = (int)random(0,255);
+    for(int x = 0; x < img.width; x++) {
+      for(int y = 0; y < img.height; y++) {
+        //choose selection critera for contour to edit
+          //get pixel properties to modify
+          float h = hue(img.pixels[img.width*y + x]);
+          float s = saturation(img.pixels[img.width*y + x]);
+          float b = brightness(img.pixels[img.width*y + x]);
+          
+          if(h > 128) {
+            h = periodicSigmoid(255,0.012,128, (255-h));
+        } else {
+            h = periodicSigmoid(255,0.012,128, h);
+        }
+        h = (h + (hueOffset))%255; 
+
+          img.pixels[img.width*y + x] = color(h,s,b);
+      }
+    }
+    img.updatePixels();
+    
+    return(img);
+  }
+  
+  /* -----------------------------------------------------------------------------
+  Saturation Adjustors
+  ----------------------------------------------------------------------------- */ 
+  
+  //adds some saturation to an image
+  PImage increaseSaturation() {
+    colorMode(HSB);
+    PImage img = baseImage.copy();
+    img.loadPixels();
+    for(int x = 0; x < img.width; x++) {
+      for(int y = 0; y < img.height; y++) {
+        //choose selection critera for contour to edit
+          //get pixel properties to modify
+          float h = hue(img.pixels[img.width*y + x]);
+          float s = saturation(img.pixels[img.width*y + x]);
+          float b = brightness(img.pixels[img.width*y + x]);
+
+          img.pixels[img.width*y + x] = color(h,constrain(s+64,0,255),b);
+      }
+    }
+    img.updatePixels();
+    
+    return(img);
+  }
+  
+  /* -----------------------------------------------------------------------------
+  Brightness adjustors
+  ----------------------------------------------------------------------------- */ 
+  
   PImage gammaCorrection(float gamma) {
     PImage img = baseImage.copy();
     img.loadPixels();
@@ -64,6 +263,50 @@ class ImageProcessor {
     }
     return(img);
   }
+  
+  /* -----------------------------------------------------------------------------
+  RGB adjustors
+  ----------------------------------------------------------------------------- */
+  
+    //applies a polynomial fade
+  PImage fade(PImage img_) {
+    PImage img= img_.copy();
+    img.loadPixels();
+    for(int x = 0; x < img.width; x++) {
+      for(int y = 0; y < img.height; y++) {
+        color col = img.pixels[y*img.width + x];
+        int r = int(255*pow(red(col)/255,3));
+        int g = int(255*pow(green(col)/255,3));
+        int b = int(255*pow(blue(col)/255,3));
+        img.pixels[y*img.width + x] = color(r,g,b);
+      }
+    }
+    img.updatePixels();
+    return(img);
+  }
+  
+  //applies a sigmoid fade centered around the threshold
+  PImage fade2(PImage img_, float threshold) {
+    PImage img= img_.copy();
+    threshold = 255 * threshold;
+    img.loadPixels();
+    for(int x = 0; x < img.width; x++) {
+      for(int y = 0; y < img.height; y++) {
+        color col = img.pixels[y*img.width + x];
+        int r = int(255 / (1+exp(-0.1*(red(col)-threshold))));
+        int g = int(255 / (1+exp(-0.1*(green(col)-threshold))));
+        int b = int(255 / (1+exp(-0.1*(blue(col)-threshold))));
+        img.pixels[y*img.width + x] = color(r,g,b);
+      }
+    }
+    img.updatePixels();
+    return(img);
+  }
+  
+  
+  /* -----------------------------------------------------------------------------
+  Pixelation Methods
+  ----------------------------------------------------------------------------- */ 
   
   //pixelate based on average
   //treats the original image as a series of boxes
@@ -221,78 +464,9 @@ class ImageProcessor {
     return(img);
   }
   
-  //a psychodelic style filter
-  //applies a blur 
-  //then creates contours with different hues by using modulo arithmetic based on brightness
-  PImage renderBrightnessContours() {
-    //
-    colorMode(HSB);
-    PImage img = baseImage;
-    //contours look nicer on less busy images
-    //img.filter(BLUR,16);    
-    img.loadPixels();
-    for(int x = 0; x < img.width; x++) {
-      for(int y = 0; y < img.height; y++) {
-        //choose selection critera for contour to edit
-        if(brightness(img.pixels[img.width*y + x]) % 10 > 6) {
-          //get pixel properties to modify
-          float h = hue(img.pixels[img.width*y + x]);
-          float s = saturation(img.pixels[img.width*y + x]);
-          float b = brightness(img.pixels[img.width*y + x]);
-
-          img.pixels[img.width*y + x] = color(h,255-s,255-b);
-        }
-        //rest of the image left as is
-        
-      }
-    }
-    img.updatePixels();
-    
-    return(img);
-  }
-  
-  //adds some saturation to an image
-  PImage increaseSaturation() {
-    colorMode(HSB);
-    PImage img = baseImage.copy();
-    img.loadPixels();
-    for(int x = 0; x < img.width; x++) {
-      for(int y = 0; y < img.height; y++) {
-        //choose selection critera for contour to edit
-          //get pixel properties to modify
-          float h = hue(img.pixels[img.width*y + x]);
-          float s = saturation(img.pixels[img.width*y + x]);
-          float b = brightness(img.pixels[img.width*y + x]);
-
-          img.pixels[img.width*y + x] = color(h,constrain(s+64,0,255),b);
-      }
-    }
-    img.updatePixels();
-    
-    return(img);
-  }
-  
-  //hue shifts an image by a random amount
-  PImage adjustHue() {
-    colorMode(HSB);
-    PImage img = baseImage.copy();
-    img.loadPixels();
-    int hueOffset = (int)random(0,255);
-    for(int x = 0; x < img.width; x++) {
-      for(int y = 0; y < img.height; y++) {
-        //choose selection critera for contour to edit
-          //get pixel properties to modify
-          float h = hue(img.pixels[img.width*y + x]);
-          float s = saturation(img.pixels[img.width*y + x]);
-          float b = brightness(img.pixels[img.width*y + x]);
-
-          img.pixels[img.width*y + x] = color((h+hueOffset)%255,s,b);
-      }
-    }
-    img.updatePixels();
-    
-    return(img);
-  }
+  /* -----------------------------------------------------------------------------
+  Fabric Methods
+  ----------------------------------------------------------------------------- */
   
   //renders in two opposite colours
   //backcolors of textures cancel in netural tones
@@ -371,6 +545,10 @@ class ImageProcessor {
     return(img);
   }
   
+  /* -----------------------------------------------------------------------------
+  Size adjustors
+  ----------------------------------------------------------------------------- */
+  
   //resize an image to fit 512*1024
   //image keeps its aspect ratio
   void resizeImage() {
@@ -386,40 +564,4 @@ class ImageProcessor {
     baseImage.resize(int(w/ratio), int(h/ratio));
   }
  
-  
-  //applies a polynomial fade
-  PImage fade(PImage img_) {
-    PImage img= img_.copy();
-    img.loadPixels();
-    for(int x = 0; x < img.width; x++) {
-      for(int y = 0; y < img.height; y++) {
-        color col = img.pixels[y*img.width + x];
-        int r = int(255*pow(red(col)/255,3));
-        int g = int(255*pow(green(col)/255,3));
-        int b = int(255*pow(blue(col)/255,3));
-        img.pixels[y*img.width + x] = color(r,g,b);
-      }
-    }
-    img.updatePixels();
-    return(img);
-  }
-  
-  //applies a sigmoid fade centered around the threshold
-  PImage fade2(PImage img_, float threshold) {
-    PImage img= img_.copy();
-    threshold = 255 * threshold;
-    img.loadPixels();
-    for(int x = 0; x < img.width; x++) {
-      for(int y = 0; y < img.height; y++) {
-        color col = img.pixels[y*img.width + x];
-        int r = int(255 / (1+exp(-0.1*(red(col)-threshold))));
-        int g = int(255 / (1+exp(-0.1*(green(col)-threshold))));
-        int b = int(255 / (1+exp(-0.1*(blue(col)-threshold))));
-        img.pixels[y*img.width + x] = color(r,g,b);
-      }
-    }
-    img.updatePixels();
-    return(img);
-  }
-  
 }
